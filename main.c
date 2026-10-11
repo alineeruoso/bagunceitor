@@ -50,6 +50,8 @@ Img in, out;
 
 // Protótipos
 void load(char* name, Img* pic);
+void confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]);
+void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]);
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
@@ -75,29 +77,42 @@ int main(int argc, char* argv[]) {
   Pixel(*pin)[in.width] = (Pixel(*)[in.height])in.pixels;
   Pixel(*pout)[in.width] = (Pixel(*)[in.height])out.pixels;
 
-  for (int i = 0; i < in.height; i++) {
-    for (int j = 0; j < in.width; j++) {
+  confusao(&in, &out, pin, pout);
+  
+  inverte_confusao(&out, &out, pin, pout);
+
+  free(in.pixels);
+  free(out.pixels);
+}
+
+void confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]) {
+  for (int i = 0; i < pic_in->height; i++) {
+    for (int j = 0; j < pic_in->width; j++) {
       pout[i][j].r = pin[i][j].g ^ CONSTANTE_XOR_CONFUSAO;
       pout[i][j].g = pin[i][j].b ^ CONSTANTE_XOR_CONFUSAO;
       pout[i][j].b = pin[i][j].r ^ CONSTANTE_XOR_CONFUSAO;
     }
   }
-  
-  for (int i = 0; i < in.height; i++) {
-    for (int j = 0; j < in.width; j++) {
+
+  // Grava a imagem como PNG para registro
+  stbi_write_png("saida_confusao.png", pic_out->width, pic_out->height, 3, pout, 0);
+}
+
+void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]) {
+  for (int i = 0; i < pic_out->height; i++) {
+    for (int j = 0; j < pic_out->width; j++) {
       unsigned char r = pout[i][j].r;
       unsigned char g = pout[i][j].g;
       unsigned char b = pout[i][j].b;
 
-      pout[i][j].r = b ^ 215;
-      pout[i][j].g = r ^ 215;
-      pout[i][j].b = g ^ 215;
+      pout[i][j].r = b ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].g = r ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].b = g ^ CONSTANTE_XOR_CONFUSAO;
     }
   }
-  stbi_write_png("saida_confusao_revert.png", out.width, out.height, 3, pout, 0);
 
-  free(in.pixels);
-  free(out.pixels);
+  // Grava a imagem como PNG para registro
+  stbi_write_png("saida_confusao_revert.png", pic_out->width, pic_out->height, 3, pout, 0);
 }
 
 void load(char* name, Img* pic) {
