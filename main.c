@@ -31,6 +31,8 @@ Para executar:
 #include <stb_image.h>
 #include <stb_image_write.h>
 
+#define CONSTANTE_XOR_CONFUSAO 215
+
 // Um pixel Pixel (24 bits)
 typedef struct {
   unsigned char r, g, b;
@@ -73,24 +75,26 @@ int main(int argc, char* argv[]) {
   Pixel(*pin)[in.width] = (Pixel(*)[in.height])in.pixels;
   Pixel(*pout)[in.width] = (Pixel(*)[in.height])out.pixels;
 
-  //
-  // Neste ponto, voce deve implementar os seus algoritmos!
-  // (ou chamar funcoes para fazer isso)
-  //
-  // Aplica o algoritmo em pin e gera a saida em pout
-  // ...
-  //
-  // Exemplo: inverte as cores
   for (int i = 0; i < in.height; i++) {
     for (int j = 0; j < in.width; j++) {
-      pout[i][j].r = 255 - pin[i][j].r;
-      pout[i][j].g = 255 - pin[i][j].g;
-      pout[i][j].b = 255 - pin[i][j].b;
+      pout[i][j].r = pin[i][j].g ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].g = pin[i][j].b ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].b = pin[i][j].r ^ CONSTANTE_XOR_CONFUSAO;
     }
   }
+  
+  for (int i = 0; i < in.height; i++) {
+    for (int j = 0; j < in.width; j++) {
+      unsigned char r = pout[i][j].r;
+      unsigned char g = pout[i][j].g;
+      unsigned char b = pout[i][j].b;
 
-  // Grava a imagem como PNG para registro
-  stbi_write_png("saida.png", out.width, out.height, 3, pout, 0);
+      pout[i][j].r = b ^ 215;
+      pout[i][j].g = r ^ 215;
+      pout[i][j].b = g ^ 215;
+    }
+  }
+  stbi_write_png("saida_confusao_revert.png", out.width, out.height, 3, pout, 0);
 
   free(in.pixels);
   free(out.pixels);
