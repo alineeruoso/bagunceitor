@@ -93,10 +93,12 @@ int main(int argc, char* argv[]) {
   } 
 
   confusao(&in, &out, pin, pout);
-  inverte_confusao(&out, &out, pin, pout);
+  difusao(&out, &out, pout, pout, horizontal, vertical);
+  stbi_write_png("baguncada.png", out.width, out.height, 3, pout, 0);
 
-  difusao(&in, &out, pin, pout, horizontal, vertical);
   inverte_difusao(&out, &out, pout, pout, horizontal, vertical);
+  inverte_confusao(&out, &out, pout, pout);
+  stbi_write_png("original.png", out.width, out.height, 3, pout, 0);
 
   size_t total_bytes = (size_t)in.width * in.height * sizeof(Pixel);
 
@@ -120,9 +122,6 @@ void confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.
       pout[i][j].b = pin[i][j].r ^ CONSTANTE_XOR_CONFUSAO;
     }
   }
-
-  // Grava a imagem como PNG para registro
-  stbi_write_png("saida_confusao.png", pic_out->width, pic_out->height, 3, pout, 0);
 }
 
 void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]) {
@@ -137,9 +136,6 @@ void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*p
       pout[i][j].b = g ^ CONSTANTE_XOR_CONFUSAO;
     }
   }
-
-  // Grava a imagem como PNG para registro
-  stbi_write_png("saida_confusao_revert.png", pic_out->width, pic_out->height, 3, pout, 0);
 }
 
 void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical) {
@@ -158,7 +154,6 @@ void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.w
   }
 
   free(temp);
-  stbi_write_png("saida_difusao.png", out.width, out.height, 3, pout, 0);
 }
 
 void inverte_difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical) {
@@ -177,8 +172,6 @@ void inverte_difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*po
   }
 
   free(temp);
-
-  stbi_write_png("saida_difusao_revert.png", out.width, out.height, 3, pout, 0);
 }
 
 
