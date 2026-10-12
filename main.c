@@ -53,6 +53,7 @@ void load(char* name, Img* pic);
 void confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]);
 void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]);
 void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical);
+void inverte_difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical);
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
@@ -95,7 +96,8 @@ int main(int argc, char* argv[]) {
   inverte_confusao(&out, &out, pin, pout);
 
   difusao(&in, &out, pin, pout, horizontal, vertical);
-  
+  inverte_difusao(&out, &out, pout, pout, horizontal, vertical);
+
   size_t total_bytes = (size_t)in.width * in.height * sizeof(Pixel);
 
   if (memcmp(in.pixels, out.pixels, total_bytes) == 0) {
@@ -158,6 +160,27 @@ void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.w
   free(temp);
   stbi_write_png("saida_difusao.png", out.width, out.height, 3, pout, 0);
 }
+
+void inverte_difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical) {
+  Pixel (*temp)[in.width] = malloc(in.height * sizeof *temp);
+  
+  for (int x = 0; x < in.width; x++) {
+    for (int y = 0; y < in.height; y++) {
+      temp[y][x] = pin[(y + vertical[x]) % in.height][x];
+    }
+  }
+
+  for (int y = 0; y < in.height; y++) {
+    for (int x = 0; x < in.width; x++) {
+      pout[y][x] = temp[y][(x + horizontal[y]) % in.width];
+    }
+  }
+
+  free(temp);
+
+  stbi_write_png("saida_difusao_revert.png", out.width, out.height, 3, pout, 0);
+}
+
 
 void load(char* name, Img* pic) {
   pic->pixels =
