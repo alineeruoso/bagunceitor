@@ -115,31 +115,45 @@ int main(int argc, char* argv[]) {
 }
 
 void confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]) {
+  if (pic_in->width != pic_out->width || pic_in->height != pic_out->height) {
+    return;
+  }
+
   for (int i = 0; i < pic_in->height; i++) {
     for (int j = 0; j < pic_in->width; j++) {
-      pout[i][j].r = pin[i][j].g ^ CONSTANTE_XOR_CONFUSAO;
-      pout[i][j].g = pin[i][j].b ^ CONSTANTE_XOR_CONFUSAO;
-      pout[i][j].b = pin[i][j].r ^ CONSTANTE_XOR_CONFUSAO;
+      Pixel temp = pin[i][j];
+      pout[i][j].r = temp.g ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].g = temp.b ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].b = temp.r ^ CONSTANTE_XOR_CONFUSAO;
     }
   }
 }
 
 void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]) {
+  if (pic_in->width != pic_out->width || pic_in->height != pic_out->height) {
+    return;
+  }
+
   for (int i = 0; i < pic_out->height; i++) {
     for (int j = 0; j < pic_out->width; j++) {
-      unsigned char r = pout[i][j].r;
-      unsigned char g = pout[i][j].g;
-      unsigned char b = pout[i][j].b;
-
-      pout[i][j].r = b ^ CONSTANTE_XOR_CONFUSAO;
-      pout[i][j].g = r ^ CONSTANTE_XOR_CONFUSAO;
-      pout[i][j].b = g ^ CONSTANTE_XOR_CONFUSAO;
+      Pixel temp = pin[i][j];
+      pout[i][j].r = temp.b ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].g = temp.r ^ CONSTANTE_XOR_CONFUSAO;
+      pout[i][j].b = temp.g ^ CONSTANTE_XOR_CONFUSAO;
     }
   }
 }
 
 void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical) {
+  if (pic_in->width != pic_out->width || pic_in->height != pic_out->height || horizontal == NULL || vertical == NULL) {
+    return;
+  }
+
   Pixel (*temp)[in.width] = malloc(in.height * sizeof *temp);
+
+  if (temp == NULL) {
+    return;
+  }
   
   for (int y = 0; y < in.height; y++) {
     for (int x = 0; x < in.width; x++) {
@@ -157,7 +171,15 @@ void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.w
 }
 
 void inverte_difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical) {
+  if (pic_in->width != pic_out->width || pic_in->height != pic_out->height || horizontal == NULL || vertical == NULL) {
+    return;
+  }
+  
   Pixel (*temp)[in.width] = malloc(in.height * sizeof *temp);
+
+  if (temp == NULL) {
+    return;
+  }
   
   for (int x = 0; x < in.width; x++) {
     for (int y = 0; y < in.height; y++) {
