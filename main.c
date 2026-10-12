@@ -52,12 +52,15 @@ Img in, out;
 void load(char* name, Img* pic);
 void confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]);
 void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]);
+void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical);
 
 int main(int argc, char* argv[]) {
   if (argc < 2) {
     printf("bagunceitor [origem]\n");
     exit(1);
   }
+
+  srand((unsigned)time(NULL));
 
   // Carrega a imagem original
   load(argv[1], &in);
@@ -77,12 +80,34 @@ int main(int argc, char* argv[]) {
   Pixel(*pin)[in.width] = (Pixel(*)[in.height])in.pixels;
   Pixel(*pout)[in.width] = (Pixel(*)[in.height])out.pixels;
 
+  int *horizontal = malloc(in.height * sizeof *horizontal);
+  int *vertical = malloc(in.width * sizeof *vertical);
+
+  for (int i = 0; i < in.height; i++) {
+    horizontal[i] = rand() % in.width;
+  } 
+
+  for (int i = 0; i < in.width; i++) {
+    vertical[i] = rand() % in.height;
+  } 
+
   confusao(&in, &out, pin, pout);
-  
   inverte_confusao(&out, &out, pin, pout);
+
+  difusao(&in, &out, pin, pout, horizontal, vertical);
+  
+  size_t total_bytes = (size_t)in.width * in.height * sizeof(Pixel);
+
+  if (memcmp(in.pixels, out.pixels, total_bytes) == 0) {
+    printf("OK: original and reverted output are exactly identical.\n");
+  } else {
+    printf("ERROR: original and reverted output differ.\n");
+  }
 
   free(in.pixels);
   free(out.pixels);
+  free(horizontal);
+  free(vertical);
 }
 
 void confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width]) {
@@ -113,6 +138,25 @@ void inverte_confusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*p
 
   // Grava a imagem como PNG para registro
   stbi_write_png("saida_confusao_revert.png", pic_out->width, pic_out->height, 3, pout, 0);
+}
+
+void difusao(Img* pic_in, Img* pic_out, Pixel(*pin)[in.width], Pixel(*pout)[in.width], int *horizontal, int *vertical) {
+  Pixel (*temp)[in.width] = malloc(in.height * sizeof *temp);
+  
+  for (int y = 0; y < in.height; y++) {
+    for (int x = 0; x < in.width; x++) {
+      temp[y][(x + horizontal[y]) % in.width] = pin[y][x];
+    }
+  }
+
+  for (int x = 0; x < in.width; x++) {
+    for (int y = 0; y < in.height; y++) {
+      pout[(y + vertical[x]) % in.height][x] = temp[y][x];
+    }
+  }
+
+  free(temp);
+  stbi_write_png("saida_difusao.png", out.width, out.height, 3, pout, 0);
 }
 
 void load(char* name, Img* pic) {
